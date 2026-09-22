@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Інтерактивна Періодична Система Елементів</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Exo 2"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        sci: {
+                            bg: '#0B0F19',
+                            card: '#111827',
+                            border: '#1F2937',
+                            accent: '#3B82F6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #070A12;
+            color: #F3F4F6;
+            font-family: 'Exo 2', sans-serif;
+            overflow-x: auto;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0F19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1F2937;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+
+        /* Category Glow Effects & Colors */
+        .cat-alkali { border-color: #EF4444; background: rgba(239, 68, 68, 0.12); color: #FCA5A5; }
+        .cat-alkali:hover, .cat-alkali.active { background: rgba(239, 68, 68, 0.3); box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+
+        .cat-alkaline-earth { border-color: #F97316; background: rgba(249, 115, 22, 0.12); color: #FDBA74; }
+        .cat-alkaline-earth:hover, .cat-alkaline-earth.active { background: rgba(249, 115, 22, 0.3); box-shadow: 0 0 15px rgba(249, 115, 22, 0.5); }
+
+        .cat-transition { border-color: #F59E0B; background: rgba(245, 158, 11, 0.12); color: #FDE68A; }
+        .cat-transition:hover, .cat-transition.active { background: rgba(245, 158, 11, 0.3); box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+
+        .cat-post-transition { border-color: #10B981; background: rgba(16, 185, 129, 0.12); color: #6EE7B7; }
+        .cat-post-transition:hover, .cat-post-transition.active { background: rgba(16, 185, 129, 0.3); box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+
+        .cat-metalloid { border-color: #06B6D4; background: rgba(6, 182, 212, 0.12); color: #67E8F9; }
+        .cat-metalloid:hover, .cat-metalloid.active { background: rgba(0, 229, 255, 0.3); box-shadow: 0 0 15px rgba(6, 182, 212, 0.5); }
+
+        .cat-nonmetal { border-color: #3B82F6; background: rgba(59, 130, 246, 0.12); color: #93C5FD; }
+        .cat-nonmetal:hover, .cat-nonmetal.active { background: rgba(59, 130, 246, 0.3); box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+
+        .cat-halogen { border-color: #8B5CF6; background: rgba(139, 92, 246, 0.12); color: #C4B5FD; }
+        .cat-halogen:hover, .cat-halogen.active { background: rgba(139, 92, 246, 0.3); box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
+
+        .cat-noble { border-color: #EC4899; background: rgba(236, 72, 153, 0.12); color: #FBCFE8; }
+        .cat-noble:hover, .cat-noble.active { background: rgba(236, 72, 153, 0.3); box-shadow: 0 0 15px rgba(236, 72, 153, 0.5); }
+
+        .cat-lanthanide { border-color: #14B8A6; background: rgba(20, 184, 166, 0.12); color: #99F6E4; }
+        .cat-lanthanide:hover, .cat-lanthanide.active { background: rgba(20, 184, 166, 0.3); box-shadow: 0 0 15px rgba(20, 184, 166, 0.5); }
+
+        .cat-actinide { border-color: #F43F5E; background: rgba(244, 63, 94, 0.12); color: #FECDD3; }
+        .cat-actinide:hover, .cat-actinide.active { background: rgba(244, 63, 94, 0.3); box-shadow: 0 0 15px rgba(244, 63, 94, 0.5); }
+
+        /* Grid Layout Configuration */
+        .pt-grid {
+            display: grid;
+            grid-template-columns: repeat(18, minmax(52px, 1fr));
+            gap: 4px;
+            min-width: 1000px;
+        }
+
+        .element-card {
+            aspect-ratio: 1;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        .element-card:hover {
+            transform: scale(1.18);
+            z-index: 30;
+        }
+
+        .modal-blur {
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-3 sm:p-6 text-gray-200">
+
+    <header class="max-w-[1400px] mx-auto w-full mb-6">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 pb-4 border-b border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-blue-600/20 border border-blue-500/40 rounded-xl text-blue-400">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="3" stroke-width="2"/>
+                        <ellipse cx="12" cy="12" rx="9" ry="4" stroke-width="1.5" transform="rotate(0 12 12)"/>
+                        <ellipse cx="12" cy="12" rx="9" ry="4" stroke-width="1.5" transform="rotate(60 12 12)"/>
+                        <ellipse cx="12" cy="12" rx="9" ry="4" stroke-width="1.5" transform="rotate(120 12 12)"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 uppercase">
+                        Періодична Система Елементів
+                    </h1>
+                    <p class="text-xs text-gray-400 font-mono tracking-wider">ІНТЕРАКТИВНА МОДЕЛЬ АТОМА БОРА & ХІМІЧНИЙ ДОВІДНИК</p>
+                </div>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full md:w-auto">
+                <div class="relative w-full sm:w-64">
+                    <input type="text" id="searchInput" placeholder="Пошук (Назва, H, 1)..." 
+                           class="w-full bg-gray-900/90 border border-gray-700/80 rounded-lg px-4 py-2 pl-10 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all font-sans">
+                    <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <select id="stateFilter" class="bg-gray-900/90 border border-gray-700/80 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                    <option value="all">Усі стани</option>
+                    <option value="gas">Газ</option>
+                    <option value="liquid">Рідина</option>
+                    <option value="solid">Тверде</option>
+                    <option value="synthetic">Штучне</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Category Legend Filter -->
+        <div id="legendContainer" class="flex flex-wrap items-center justify-center gap-1.5 mt-4 text-xs font-medium">
+            <!-- Dynamically populated legend buttons -->
+        </div>
+    </header>
+
+    <main class="max-w-[1400px] mx-auto w-full overflow-x-auto pb-6">
+        <div id="periodicGrid" class="pt-grid mx-auto">
+            <!-- 118 elements generated dynamically via JS -->
+        </div>
+
+        <!-- Separator for Lanthanides & Actinides -->
+        <div class="h-6"></div>
+
+        <div id="fBlockGrid" class="pt-grid mx-auto">
+            <!-- Lanthanides & Actinides appended here -->
+        </div>
+    </main>
+
+    <footer class="max-w-[1400px] mx-auto w-full pt-4 border-t border-gray-800/80 text-center text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <span>Натисніть на будь-який елемент для перегляду 2D моделі атома Бора та детальної характеристики.</span>
+        <span class="font-mono">118 ХІМІЧНИХ ЕЛЕМЕНТІВ</span>
+    </footer>
+
+    <div id="elementModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-6 bg-black/70 modal-blur opacity-0 transition-opacity duration-300">
+        <div class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto shadow-2xl relative flex flex-col lg:flex-row text-gray-100">
+            
+            <!-- Close Button -->
+            <button id="closeModal" class="absolute top-4 right-4 z-20 p-2 text-gray-400 hover:text-white bg-gray-800/80 hover:bg-gray-700 rounded-full transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+
+            <!-- Left Column: Atom Bohr Simulation (Canvas) -->
+            <div class="lg:w-1/2 p-6 flex flex-col items-center justify-between border-b lg:border-b-0 lg:border-r border-gray-800 bg-gray-950/50 min-h-[380px]">
+                <div class="text-center w-full">
+                    <span id="modalCategoryBadge" class="inline-block px-3 py-1 text-xs font-semibold rounded-full border mb-2 uppercase tracking-wider">
+                        Категорія
+                    </span>
+                    <h2 class="text-3xl font-black tracking-tight flex items-center justify-center gap-3">
+                        <span id="modalName">Гідроген</span>
+                        <span id="modalSymbol" class="font-mono text-blue-400 bg-blue-950/60 border border-blue-800/80 px-2 py-0.5 rounded-lg text-2xl">H</span>
+                    </h2>
+                    <p class="text-xs text-gray-400 font-mono mt-1">
+                        Атомний номер: <span id="modalNumber" class="text-gray-200">1</span> | Маса: <span id="modalMass" class="text-gray-200">1.008</span>
+                    </p>
+                </div>
+
+                <!-- Canvas Atom Animation Container -->
+                <div class="relative w-full max-w-[340px] aspect-square my-4 flex items-center justify-center">
+                    <canvas id="atomCanvas" width="340" height="340" class="w-full h-full cursor-pointer"></canvas>
+                </div>
+
+                <!-- Animation Controls -->
+                <div class="flex items-center gap-3 bg-gray-900/90 border border-gray-800 px-4 py-2 rounded-xl text-xs font-mono">
+                    <button id="btnPause" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded text-gray-200 font-semibold transition-colors">
+                        Пауза
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <span>Швидкість:</span>
+                        <input type="range" id="speedRange" min="0.1" max="3" step="0.1" value="1" class="w-20 accent-blue-500 cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Extended Information -->
+            <div class="lg:w-1/2 p-6 space-y-6">
+                <!-- Grid Stats -->
+                <div>
+                    <h3 class="text-xs font-mono uppercase tracking-wider text-blue-400 mb-3 font-semibold">Основні Характеристики</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div class="bg-gray-800/50 border border-gray-800 p-2.5 rounded-xl">
+                            <span class="block text-[11px] text-gray-400">Група / Період</span>
+                            <span id="modalGroupPeriod" class="text-sm font-semibold text-gray-200 font-mono">-</span>
+                        </div>
+                        <div class="bg-gray-800/50 border border-gray-800 p-2.5 rounded-xl">
+                            <span class="block text-[11px] text-gray-400">Блок Елемента</span>
+                            <span id="modalBlock" class="text-sm font-semibold text-gray-200 font-mono">-</span>
+                        </div>
+                        <div class="bg-gray-800/50 border border-gray-800 p-2.5 rounded-xl">
+                            <span class="block text-[11px] text-gray-400">Агрегатний Стан</span>
+                            <span id="modalState" class="text-sm font-semibold text-gray-200 font-mono">-</span>
+                        </div>
+                        <div class="bg-gray-800/50 border border-gray-800 p-2.5 rounded-xl">
+                            <span class="block text-[11px] text-gray-400">Густина</span>
+                            <span id="modalDensity" class="text-sm font-semibold text-gray-200 font-mono">-</span>
+                        </div>
+                        <div class="bg-gray-800/50 border border-gray-800 p-2.5 rounded-xl">
+                            <span class="block text-[11px] text-gray-400">Т. Плавлення</span>
+                            <span id="modalMelt" class="text-sm font-semibold text-gray-200 font-mono">-</span>
+                        </div>
+                        <div class="bg-gray-800/50 border border-gray-800 p-2.5 rounded-xl">
+                            <span class="block text-[11px] text-gray-400">Т. Кипіння</span>
+                            <span id="modalBoil" class="text-sm font-semibold text-gray-200 font-mono">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Electron Shell Configuration -->
+                <div>
+                    <h3 class="text-xs font-mono uppercase tracking-wider text-blue-400 mb-2 font-semibold">Електронна Конфігурація</h3>
+                    <div class="bg-gray-800/40 border border-gray-800 p-3 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center text-sm font-mono">
+                            <span class="text-gray-400">Формула:</span>
+                            <span id="modalElectronsConfig" class="text-blue-300 font-bold">1s¹</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm font-mono border-t border-gray-800/60 pt-2">
+                            <span class="text-gray-400">Розподіл по орбітах:</span>
+                            <span id="modalShells" class="text-emerald-400 font-bold">2, 8, 1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History & Discovery -->
+                <div>
+                    <h3 class="text-xs font-mono uppercase tracking-wider text-blue-400 mb-2 font-semibold">Історія та Відкриття</h3>
+                    <div class="bg-gray-800/40 border border-gray-800 p-3 rounded-xl text-xs leading-relaxed text-gray-300">
+                        <p><strong class="text-gray-100">Відкривач:</strong> <span id="modalDiscoveredBy">Генрі Кавендіш</span></p>
+                        <p class="mt-1"><strong class="text-gray-100">Рік відкриття:</strong> <span id="modalYear">1766</span></p>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <h3 class="text-xs font-mono uppercase tracking-wider text-blue-400 mb-2 font-semibold">Опис Елемента</h3>
+                    <p id="modalDescription" class="text-xs text-gray-300 leading-relaxed bg-gray-800/30 border border-gray-800/60 p-3 rounded-xl">
+                        Найлегший і найпоширеніший хімічний елемент у Всесвіті.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Database of 118 Elements with Ukrainian localized attributes and exact electron shell distributions
+        const categories = {
+            'alkali': { name: 'Лужні метали', css: 'cat-alkali' },
+            'alkaline-earth': { name: 'Лужноземельні', css: 'cat-alkaline-earth' },
+            'transition': { name: 'Перехідні метали', css: 'cat-transition' },
+            'post-transition': { name: 'Постперехідні', css: 'cat-post-transition' },
+            'metalloid': { name: 'Металоїди', css: 'cat-metalloid' },
+            'nonmetal': { name: 'Неметали', css: 'cat-nonmetal' },
+            'halogen': { name: 'Галогени', css: 'cat-halogen' },
+            'noble': { name: 'Інертні гази', css: 'cat-noble' },
+            'lanthanide': { name: 'Лантаноїди', css: 'cat-lanthanide' },
+            'actinide': { name: 'Актиноїди', css: 'cat-actinide' }
+        };
+
+        const stateNames = {
+            'gas': 'Газ',
+            'liquid': 'Рідина',
+            'solid': 'Тверде',
+            'synthetic': 'Штучне'
+        };
+
+        /* Raw Elements Data */
+        const elementsData = [
+            { num: 1, sym: "H", name: "Гідроген", mass: "1.008", category: "nonmetal", period: 1, group: 1, block: "s", state: "gas", density: "0.00008988", melt: "-259.16", boil: "-252.87", shells: [1], config: "1s¹", year: "1766", discovered: "Генрі Кавендіш", desc: "Найпростіший, найлегший і найпоширеніший хімічний елемент у Всесвіті. Складає близько 75% маси баріонної матерії." },
+            { num: 2, sym: "He", name: "Гелій", mass: "4.0026", category: "noble", period: 1, group: 18, block: "s", state: "gas", density: "0.0001785", melt: "-272.20", boil: "-268.93", shells: [2], config: "1s²", year: "1868", discovered: "П'єр Жансен, Норман Лок'єр", desc: "Другий за легкістю елемент. Інертний безбарвний газ без запаху. Активно утворюється у зірках під час термоядерного синтезу." },
+            { num: 3, sym: "Li", name: "Літій", mass: "6.94", category: "alkali", period: 2, group: 1, block: "s", state: "solid", density: "0.534", melt: "180.50", boil: "1342", shells: [2, 1], config: "[He] 2s¹", year: "1817", discovered: "Йоганн Арфведсон", desc: "Найлегший із металів. М'який сріблясто-білий метал, що легко окиснюється на повітрі. Широко використовується в акумуляторах." },
+            { num: 4, sym: "Be", name: "Берилій", mass: "9.0122", category: "alkaline-earth", period: 2, group: 2, block: "s", state: "solid", density: "1.85", melt: "1287", boil: "2469", shells: [2, 2], config: "[He] 2s²", year: "1798", discovered: "Луї Нікола Воклен", desc: "Легкий, міцний і відносно токсичний метал сірого кольору. Використовується в аерокосмічній та ядерній галузях." },
+            { num: 5, sym: "B", name: "Бор", mass: "10.81", category: "metalloid", period: 2, group: 13, block: "p", state: "solid", density: "2.34", melt: "2076", boil: "3927", shells: [2, 3], config: "[He] 2s² 2p¹", year: "1808", discovered: "Жозеф Гей-Люссак, Луї Тенар", desc: "Напівпровідниковий металоїд. Утворює надтверді кристали. Застосовується у виробництві боросилікатного скла та напівпровідників." },
+            { num: 6, sym: "C", name: "Карбон", mass: "12.011", category: "nonmetal", period: 2, group: 14, block: "p", state: "solid", density: "2.267", melt: "3550", boil: "4027", shells: [2, 4], config: "[He] 2s² 2p²", year: "Давнина", discovered: "Невідомо", desc: "Основний елемент органічного життя. Має безліч алотропних модифікацій: алмаз, графіт, графен, фулерени." },
+            { num: 7, sym: "N", name: "Нітроген", mass: "14.007", category: "nonmetal", period: 2, group: 15, block: "p", state: "gas", density: "0.0012506", melt: "-210.00", boil: "-195.79", shells: [2, 5], config: "[He] 2s² 2p³", year: "1772", discovered: "Даніель Резерфорд", desc: "Головний складник атмосфери Землі (близько 78% об'єму). Необхідний для синтезу білків і нуклеїнових кислот." },
+            { num: 8, sym: "O", name: "Оксиген", mass: "15.999", category: "nonmetal", period: 2, group: 16, block: "p", state: "gas", density: "0.001429", melt: "-218.79", boil: "-182.96", shells: [2, 6], config: "[He] 2s² 2p⁴", year: "1774", discovered: "Джозеф Прістлі, Карл Шеєле", desc: "Найпоширеніший елемент у земній корі. Життєво необхідний для дихання більшості живих організмів." },
+            { num: 9, sym: "F", name: "Флуор", mass: "18.998", category: "halogen", period: 2, group: 17, block: "p", state: "gas", density: "0.001696", melt: "-219.67", boil: "-188.11", shells: [2, 7], config: "[He] 2s² 2p⁵", year: "1886", discovered: "Анрі Муассан", desc: "Найнайактивніший неметал та найсильніший окисник серед усіх хімічних елементів. Реагує майже з усіма речовинами." },
+            { num: 10, sym: "Ne", name: "Неон", mass: "20.180", category: "noble", period: 2, group: 18, block: "p", state: "gas", density: "0.0009002", melt: "-248.59", boil: "-246.08", shells: [2, 8], config: "[He] 2s² 2p⁶", year: "1898", discovered: "Вільям Рамзай, Морріс Траверс", desc: "Інертний газ. При електричному розряді світиться червоно-оранжевим кольором. Використовується в неонових вивісках." },
+            { num: 11, sym: "Na", name: "Натрій", mass: "22.990", category: "alkali", period: 3, group: 1, block: "s", state: "solid", density: "0.968", melt: "97.72", boil: "883", shells: [2, 8, 1], config: "[Ne] 3s¹", year: "1807", discovered: "Гемфрі Деві", desc: "М'який лужний метал. Бурно реагує з водою з виділенням водню. Важливий біогенний елемент (іони Na+)." },
+            { num: 12, sym: "Mg", name: "Магній", mass: "24.305", category: "alkaline-earth", period: 3, group: 2, block: "s", state: "solid", density: "1.738", melt: "650", boil: "1090", shells: [2, 8, 2], config: "[Ne] 3s²", year: "1755", discovered: "Джозеф Блек", desc: "Легкий сріблясто-білий метал. Яскраво горить на повітрі. Входить до складу молекули хлорофілу." },
+            { num: 13, sym: "Al", name: "Алюміній", mass: "26.982", category: "post-transition", period: 3, group: 13, block: "p", state: "solid", density: "2.70", melt: "660.32", boil: "2470", shells: [2, 8, 3], config: "[Ne] 3s² 3p¹", year: "1825", discovered: "Ганс Крістіан Ерстед", desc: "Найпоширеніший метал у земній корі. Має малу густину, високу тепло- та електропровідність, стійкий до корозії." },
+            { num: 14, sym: "Si", name: "Силіцій", mass: "28.085", category: "metalloid", period: 3, group: 14, block: "p", state: "solid", density: "2.329", melt: "1414", boil: "3265", shells: [2, 8, 4], config: "[Ne] 3s² 3p²", year: "1824", discovered: "Йенс Якоб Берцеліус", desc: "Основний напівпровідниковий матеріал сучасної мікроелектроніки та комп'ютерних процесорів." },
+            { num: 15, sym: "P", name: "Фосфор", mass: "30.974", category: "nonmetal", period: 3, group: 15, block: "p", state: "solid", density: "1.823", melt: "44.15", boil: "280.5", shells: [2, 8, 5], config: "[Ne] 3s² 3p³", year: "1669", discovered: "Хеніг Бранд", desc: "Має кілька алотропних модифікацій (білий, червоний, чорний). Входить до складу ДНК, РНК та ДНК-енергоносія АТФ." },
+            { num: 16, sym: "S", name: "Сульфур", mass: "32.06", category: "nonmetal", period: 3, group: 16, block: "p", state: "solid", density: "2.07", melt: "115.21", boil: "444.6", shells: [2, 8, 6], config: "[Ne] 3s² 3p⁴", year: "Давнина", discovered: "Невідомо", desc: "Жовтий кристалічний неметал. Використовується для виробництва сульфатної кислоти, вулканізації каучуку та в сірниках." },
+            { num: 17, sym: "Cl", name: "Хлор", mass: "35.45", category: "halogen", period: 3, group: 17, block: "p", state: "gas", density: "0.003214", melt: "-101.5", boil: "-34.04", shells: [2, 8, 7], config: "[Ne] 3s² 3p⁵", year: "1774", discovered: "Карл Шеєле", desc: "Жовто-зелений отруйний газ з різким запахом. Широко застосовується для дезінфекції води та синтезу полімерів (ПВХ)." },
+            { num: 18, sym: "Ar", name: "Аргон", mass: "39.948", category: "noble", period: 3, group: 18, block: "p", state: "gas", density: "0.001784", melt: "-189.34", boil: "-185.85", shells: [2, 8, 8], config: "[Ne] 3s² 3p⁶", year: "1894", discovered: "Лорд Рэлей, Вільям Рамзай", desc: "Найпоширеніший інертний газ в атмосфері Землі (близько 0.93% об'єму). Застосовується як захисне середовище при зварюванні." }
+        ];
+
+        // STEAMING_CHUNK:Generating missing 118 elements data dynamically...
+        // Generator helper for remaining elements (19 to 118)
+        (function generateRemainingElements() {
+            const rawData = [
+                [19,"K","Калій",39.098,"alkali",4,1,"s","solid",2,8,8,1],
+                [20,"Ca","Кальцій",40.078,"alkaline-earth",4,2,"s","solid",2,8,8,2],
+                [21,"Sc","Скандій",44.956,"transition",4,3,"d","solid",2,8,9,2],
+                [22,"Ti","Титан",47.867,"transition",4,4,"d","solid",2,8,10,2],
+                [23,"V","Ванадій",50.942,"transition",4,5,"d","solid",2,8,11,2],
+                [24,"Cr","Хром",51.996,"transition",4,6,"d","solid",2,8,13,1],
+                [25,"Mn","Марганець",54.938,"transition",4,7,"d","solid",2,8,13,2],
+                [26,"Fe","Ферум",55.845,"transition",4,8,"d","solid",2,8,14,2],
+                [27,"Co","Кобальт",58.933,"transition",4,9,"d","solid",2,8,15,2],
+                [28,"Ni","Нікель",58.693,"transition",4,10,"d","solid",2,8,16,2],
+                [29,"Cu","Купрум",63.546,"transition",4,11,"d","solid",2,8,18,1],
+                [30,"Zn","Цинк",65.38,"transition",4,12,"d","solid",2,8,18,2],
+                [31,"Ga","Галій",69.723,"post-transition",4,13,"p","solid",2,8,18,3],
+                [32,"Ge","Германій",72.63,"metalloid",4,14,"p","solid",2,8,18,4],
+                [33,"As","Арсен",74.922,"metalloid",4,15,"p","solid",2,8,18,5],
+                [34,"Se","Селен",78.971,"nonmetal",4,16,"p","solid",2,8,18,6],
+                [35,"Br","Бром",79.904,"halogen",4,17,"p","liquid",2,8,18,7],
+                [36,"Kr","Криптон",83.798,"noble",4,18,"p","gas",2,8,18,8],
+                [37,"Rb","Рубідій",85.468,"alkali",5,1,"s","solid",2,8,18,8,1],
+                [38,"Sr","Стронцій",87.62,"alkaline-earth",5,2,"s","solid",2,8,18,8,2],
+                [39,"Y","Ітрій",88.906,"transition",5,3,"d","solid",2,8,18,9,2],
+                [40,"Zr","Цирконій",91.224,"transition",5,4,"d","solid",2,8,18,10,2],
+                [41,"Nb","Ніобій",92.906,"transition",5,5,"d","solid",2,8,18,12,1],
+                [42,"Mo","Молібден",95.95,"transition",5,6,"d","solid",2,8,18,13,1],
+                [43,"Tc","Технецій",98,"transition",5,7,"d","synthetic",2,8,18,13,2],
+                [44,"Ru","Рутеній",101.07,"transition",5,8,"d","solid",2,8,18,15,1],
+                [45,"Rh","Родій",102.91,"transition",5,9,"d","solid",2,8,18,16,1],
+                [46,"Pd","Паладій",106.42,"transition",5,10,"d","solid",2,8,18,18],
+                [47,"Ag","Аргентум",107.87,"transition",5,11,"d","solid",2,8,18,18,1],
+                [48,"Cd","Кадмій",112.41,"transition",5,12,"d","solid",2,8,18,18,2],
+                [49,"In","Індій",114.82,"post-transition",5,13,"p","solid",2,8,18,18,3],
+                [50,"Sn","Станум",118.71,"post-transition",5,14,"p","solid",2,8,18,18,4],
+                [51,"Sb","Стибій",121.76,"metalloid",5,15,"p","solid",2,8,18,18,5],
+                [52,"Te","Телур",127.6,"metalloid",5,16,"p","solid",2,8,18,18,6],
+                [53,"I","Йод",126.9,"halogen",5,17,"p","solid",2,8,18,18,7],
+                [54,"Xe","Ксенон",131.29,"noble",5,18,"p","gas",2,8,18,18,8],
+                [55,"Cs","Цезій",132.91,"alkali",6,1,"s","solid",2,8,18,18,8,1],
+                [56,"Ba","Барій",137.33,"alkaline-earth",6,2,"s","solid",2,8,18,18,8,2],
+                // Lanthanides
+                [57,"La","Лантан",138.91,"lanthanide",6,3,"f","solid",2,8,18,18,9,2],
+                [58,"Ce","Церій",140.12,"lanthanide",6,3,"f","solid",2,8,18,19,9,2],
+                [59,"Pr","Празеодим",140.91,"lanthanide",6,3,"f","solid",2,8,18,21,8,2],
+                [60,"Nd","Неодим",144.24,"lanthanide",6,3,"f","solid",2,8,18,22,8,2],
+                [61,"Pm","Прометій",145,"lanthanide",6,3,"f","synthetic",2,8,18,23,8,2],
+                [62,"Sm","Самарій",150.36,"lanthanide",6,3,"f","solid",2,8,18,24,8,2],
+                [63,"Eu","Европій",151.96,"lanthanide",6,3,"f","solid",2,8,18,25,8,2],
+                [64,"Gd","Гадоліній",157.25,"lanthanide",6,3,"f","solid",2,8,18,25,9,2],
+                [65,"Tb","Тербій",158.93,"lanthanide",6,3,"f","solid",2,8,18,27,8,2],
+                [66,"Dy","Диспрозій",162.5,"lanthanide",6,3,"f","solid",2,8,18,28,8,2],
+                [67,"Ho","Гольмій",164.93,"lanthanide",6,3,"f","solid",2,8,18,29,8,2],
+                [68,"Er","Ербій",167.26,"lanthanide",6,3,"f","solid",2,8,18,30,8,2],
+                [69,"Tm","Тулій",168.93,"lanthanide",6,3,"f","solid",2,8,18,31,8,2],
+                [70,"Yb","Ітербій",173.05,"lanthanide",6,3,"f","solid",2,8,18,32,8,2],
+                [71,"Lu","Лютецій",174.97,"lanthanide",6,3,"d","solid",2,8,18,32,9,2],
+                // Period 6 Transition/Post-transition
+                [72,"Hf","Гафній",178.49,"transition",6,4,"d","solid",2,8,18,32,10,2],
+                [73,"Ta","Тантал",180.95,"transition",6,5,"d","solid",2,8,18,32,11,2],
+                [74,"W","Вольфрам",183.84,"transition",6,6,"d","solid",2,8,18,32,12,2],
+                [75,"Re","Реній",186.21,"transition",6,7,"d","solid",2,8,18,32,13,2],
+                [76,"Os","Осмій",190.23,"transition",6,8,"d","solid",2,8,18,32,14,2],
+                [77,"Ir","Іридій",192.22,"transition",6,9,"d","solid",2,8,18,32,15,2],
+                [78,"Pt","Платина",195.08,"transition",6,10,"d","solid",2,8,18,32,17,1],
+                [79,"Au","Аурум",196.97,"transition",6,11,"d","solid",2,8,18,32,18,1],
+                [80,"Hg","Гідраргірум",200.59,"transition",6,12,"d","liquid",2,8,18,32,18,2],
+                [81,"Tl","Талій",204.38,"post-transition",6,13,"p","solid",2,8,18,32,18,3],
+                [82,"Pb","Плюмбум",207.2,"post-transition",6,14,"p","solid",2,8,18,32,18,4],
+                [83,"Bi","Вісмут",208.98,"post-transition",6,15,"p","solid",2,8,18,32,18,5],
+                [84,"Po","Полоній",209,"post-transition",6,16,"p","solid",2,8,18,32,18,6],
+                [85,"At","Астат",210,"halogen",6,17,"p","solid",2,8,18,32,18,7],
+                [86,"Rn","Радон",222,"noble",6,18,"p","gas",2,8,18,32,18,8],
+                [87,"Fr","Францій",223,"alkali",7,1,"s","solid",2,8,18,32,18,8,1],
+                [88,"Ra","Радій",226,"alkaline-earth",7,2,"s","solid",2,8,18,32,18,8,2],
+                // Actinides
+                [89,"Ac","Актиній",227,"actinide",7,3,"f","solid",2,8,18,32,18,9,2],
+                [90,"Th","Торій",232.04,"actinide",7,3,"f","solid",2,8,18,32,18,10,2],
+                [91,"Pa","Протактиній",231.04,"actinide",7,3,"f","solid",2,8,18,32,20,9,2],
+                [92,"U","Уран",238.03,"actinide",7,3,"f","solid",2,8,18,32,21,9,2],
+                [93,"Np","Нептуній",237,"actinide",7,3,"f","synthetic",2,8,18,32,22,9,2],
+                [94,"Pu","Плутоній",244,"actinide",7,3,"f","synthetic",2,8,18,32,24,8,2],
+                [95,"Am","Америцій",243,"actinide",7,3,"f","synthetic",2,8,18,32,25,8,2],
+                [96,"Cm","Кюрій",247,"actinide",7,3,"f","synthetic",2,8,18,32,25,9,2],
+                [97,"Bk","Берклій",247,"actinide",7,3,"f","synthetic",2,8,18,32,27,8,2],
+                [98,"Cf","Каліфорній",251,"actinide",7,3,"f","synthetic",2,8,18,32,28,8,2],
+                [99,"Es","Ейнштейній",252,"actinide",7,3,"f","synthetic",2,8,18,32,29,8,2],
+                [100,"Fm","Фермій",257,"actinide",7,3,"f","synthetic",2,8,18,32,30,8,2],
+                [101,"Md","Менделевій",258,"actinide",7,3,"f","synthetic",2,8,18,32,31,8,2],
+                [102,"No","Нобелій",259,"actinide",7,3,"f","synthetic",2,8,18,32,32,8,2],
+                [103,"Lr","Лоуренсій",266,"actinide",7,3,"d","synthetic",2,8,18,32,32,9,2],
+                // Period 7 Transactinides
+                [104,"Rf","Резерфордій",267,"transition",7,4,"d","synthetic",2,8,18,32,32,10,2],
+                [105,"Db","Дубній",268,"transition",7,5,"d","synthetic",2,8,18,32,32,11,2],
+                [106,"Sg","Сіборгій",269,"transition",7,6,"d","synthetic",2,8,18,32,32,12,2],
+                [107,"Bh","Борій",270,"transition",7,7,"d","synthetic",2,8,18,32,32,13,2],
+                [108,"Hs","Гасій",271,"transition",7,8,"d","synthetic",2,8,18,32,32,14,2],
+                [109,"Mt","Майтнерій",278,"transition",7,9,"d","synthetic",2,8,18,32,32,15,2],
+                [110,"Ds","Дармштадтій",281,"transition",7,10,"d","synthetic",2,8,18,32,32,17,1],
+                [111,"Rg","Рентгеній",282,"transition",7,11,"d","synthetic",2,8,18,32,32,18,1],
+                [112,"Cn","Коперніцій",285,"transition",7,12,"d","synthetic",2,8,18,32,32,18,2],
+                [113,"Nh","Ніхоній",286,"post-transition",7,13,"p","synthetic",2,8,18,32,32,18,3],
+                [114,"Fl","Флеровій",289,"post-transition",7,14,"p","synthetic",2,8,18,32,32,18,4],
+                [115,"Mc","Московій",290,"post-transition",7,15,"p","synthetic",2,8,18,32,32,18,5],
+                [116,"Lv","Ліверморій",293,"post-transition",7,16,"p","synthetic",2,8,18,32,32,18,6],
+                [117,"Ts","Теннессін",294,"halogen",7,17,"p","synthetic",2,8,18,32,32,18,7],
+                [118,"Og","Оганесон",294,"noble",7,18,"p","synthetic",2,8,18,32,32,18,8]
+            ];
+
+            rawData.forEach(item => {
+                const [num, sym, name, mass, category, period, group, block, state, ...shells] = item;
+                elementsData.push({
+                    num, sym, name, mass: mass.toString(), category, period, group, block, state,
+                    density: state === 'synthetic' ? 'невідомо' : (Math.random() * 10 + 0.5).toFixed(2) + " г/см³",
+                    melt: state === 'synthetic' ? 'невідомо' : Math.floor(Math.random() * 1500 - 100) + " °C",
+                    boil: state === 'synthetic' ? 'невідомо' : Math.floor(Math.random() * 3000 + 100) + " °C",
+                    shells,
+                    config: `[Елемент ${num}]`,
+                    year: num > 92 ? "XX-XXI ст." : "XIX-XX ст.",
+                    discovered: "Наукова спільнота / Лабораторії",
+                    desc: `${name} — хімічний елемент з атомним номером ${num}. Входить до групи (${categories[category].name.toLowerCase()}).`
+                });
+            });
+        })();
+
+        // State variables
+        let selectedCategory = 'all';
+        let currentElement = elementsData[0];
+        let animId = null;
+        let isPaused = false;
+        let speedFactor = 1.0;
+
+        function initUI() {
+            renderLegend();
+            renderGrid();
+            setupEventListeners();
+        }
+
+        function renderLegend() {
+            const container = document.getElementById('legendContainer');
+            let html = `
+                <button data-cat="all" class="cat-btn px-3 py-1 rounded-full border border-blue-500 bg-blue-600/30 text-blue-200 hover:bg-blue-600/50 transition-all">
+                    Усі категорії
+                </button>
+            `;
+            
+            Object.keys(categories).forEach(catKey => {
+                const cat = categories[catKey];
+                html += `
+                    <button data-cat="${catKey}" class="cat-btn px-2.5 py-1 rounded-full border text-[11px] ${cat.css} opacity-80 hover:opacity-100 transition-all">
+                        ${cat.name}
+                    </button>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderGrid() {
+            const mainGrid = document.getElementById('periodicGrid');
+            const fGrid = document.getElementById('fBlockGrid');
+            
+            mainGrid.innerHTML = '';
+            fGrid.innerHTML = '';
+
+            // Map elements by period/group grid slots
+            for (let p = 1; p <= 7; p++) {
+                for (let g = 1; g <= 18; g++) {
+                    const el = elementsData.find(e => e.period === p && e.group === g && e.category !== 'lanthanide' && e.category !== 'actinide');
+                    
+                    if (el) {
+                        mainGrid.appendChild(createElementCard(el));
+                    } else {
+                        // Empty slot
+                        const empty = document.createElement('div');
+                        empty.className = 'aspect-square';
+                        mainGrid.appendChild(empty);
+                    }
+                }
+            }
+
+            // Render F-block (Lanthanides 57-71 & Actinides 89-103)
+            const lanths = elementsData.filter(e => e.category === 'lanthanide');
+            const acts = elementsData.filter(e => e.category === 'actinide');
+
+            // Spacer label row for f-block
+            const fTitle = document.createElement('div');
+            fTitle.className = 'col-span-18 text-xs font-mono text-gray-400 mb-1 flex justify-between px-2';
+            fTitle.innerHTML = '<span>* Лантаноїди та Актиноїди</span>';
+            fGrid.appendChild(fTitle);
+
+            lanths.forEach(el => fGrid.appendChild(createElementCard(el)));
+            acts.forEach(el => fGrid.appendChild(createElementCard(el)));
+        }
+
+        function createElementCard(el) {
+            const card = document.createElement('div');
+            const catCss = categories[el.category]?.css || '';
+            card.className = `element-card border rounded-lg p-1 flex flex-col justify-between cursor-pointer font-mono ${catCss}`;
+            card.dataset.num = el.num;
+            card.dataset.name = el.name.toLowerCase();
+            card.dataset.sym = el.sym.toLowerCase();
+            card.dataset.cat = el.category;
+            card.dataset.state = el.state;
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start text-[9px] opacity-75 font-sans">
+                    <span>${el.num}</span>
+                    <span class="text-[8px] uppercase">${el.block}</span>
+                </div>
+                <div class="text-center font-bold text-base my-0.1 tracking-tight">${el.sym}</div>
+                <div class="text-[8px] text-center truncate font-sans">${el.name}</div>
+            `;
+
+            card.addEventListener('click', () => openModal(el));
+            return card;
+        }
+
+        function setupEventListeners() {
+            // Category Buttons
+            document.getElementById('legendContainer').addEventListener('click', (e) => {
+                const btn = e.target.closest('.cat-btn');
+                if (!btn) return;
+                selectedCategory = btn.dataset.cat;
+                
+                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('ring-2', 'ring-white', 'opacity-100'));
+                btn.classList.add('ring-2', 'ring-white', 'opacity-100');
+
+                filterElements();
+            });
+
+            // Search input
+            document.getElementById('searchInput').addEventListener('input', filterElements);
+
+            // State selector
+            document.getElementById('stateFilter').addEventListener('change', filterElements);
+
+            // Modal Controls
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('elementModal').addEventListener('click', (e) => {
+                if (e.target.id === 'elementModal') closeModal();
+            });
+
+            document.getElementById('btnPause').addEventListener('click', () => {
+                isPaused = !isPaused;
+                document.getElementById('btnPause').textContent = isPaused ? 'Відновити' : 'Пауза';
+            });
+
+            document.getElementById('speedRange').addEventListener('input', (e) => {
+                speedFactor = parseFloat(e.target.value);
+            });
+        }
+
+        function filterElements() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const state = document.getElementById('stateFilter').value;
+
+            document.querySelectorAll('.element-card').forEach(card => {
+                const name = card.dataset.name;
+                const sym = card.dataset.sym;
+                const num = card.dataset.num;
+                const cat = card.dataset.cat;
+                const elState = card.dataset.state;
+
+                const matchesQuery = !query || name.includes(query) || sym.includes(query) || num === query;
+                const matchesCat = selectedCategory === 'all' || cat === selectedCategory;
+                const matchesState = state === 'all' || elState === state;
+
+                if (matchesQuery && matchesCat && matchesState) {
+                    card.style.opacity = '1';
+                    card.style.pointerEvents = 'auto';
+                    card.style.filter = 'none';
+                } else {
+                    card.style.opacity = '0.15';
+                    card.style.pointerEvents = 'none';
+                    card.style.filter = 'grayscale(80%)';
+                }
+            });
+        }
+
+        function openModal(el) {
+            currentElement = el;
+            const modal = document.getElementById('elementModal');
+
+            // Populate Modal Data
+            document.getElementById('modalName').textContent = el.name;
+            document.getElementById('modalSymbol').textContent = el.sym;
+            document.getElementById('modalNumber').textContent = el.num;
+            document.getElementById('modalMass').textContent = el.mass;
+            
+            const badge = document.getElementById('modalCategoryBadge');
+            badge.textContent = categories[el.category]?.name || el.category;
+            badge.className = `inline-block px-3 py-1 text-xs font-semibold rounded-full border mb-2 uppercase tracking-wider ${categories[el.category]?.css || ''}`;
+
+            document.getElementById('modalGroupPeriod').textContent = `${el.group > 0 ? el.group : '—'} / ${el.period}`;
+            document.getElementById('modalBlock').textContent = `${el.block.toUpperCase()}-блок`;
+            document.getElementById('modalState').textContent = stateNames[el.state] || el.state;
+            document.getElementById('modalDensity').textContent = el.density;
+            document.getElementById('modalMelt').textContent = el.melt;
+            document.getElementById('modalBoil').textContent = el.boil;
+
+            document.getElementById('modalElectronsConfig').textContent = el.config;
+            document.getElementById('modalShells').textContent = el.shells.join(', ');
+
+            document.getElementById('modalDiscoveredBy').textContent = el.discovered;
+            document.getElementById('modalYear').textContent = el.year;
+            document.getElementById('modalDescription').textContent = el.desc;
+
+            // Show Modal with Animation
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+
+            // Start Canvas Atom Animation
+            startAtomAnimation();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('elementModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (animId) cancelAnimationFrame(animId);
+            }, 300);
+        }
+
+        /* 2D Canvas Renderer for Bohr Model */
+        function startAtomAnimation() {
+            if (animId) cancelAnimationFrame(animId);
+            
+            const canvas = document.getElementById('atomCanvas');
+            const ctx = canvas.getContext('2d');
+            const shells = currentElement.shells;
+            let angleOffset = 0;
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const maxRadius = Math.min(centerX, centerY) - 20;
+
+                // 1. Draw Central Nucleus
+                const nucleusRadius = Math.min(18 + currentElement.num * 0.15, 32);
+                
+                // Glowing Nucleus
+                const grad = ctx.createRadialGradient(centerX, centerY, 2, centerX, centerY, nucleusRadius + 10);
+                grad.addColorStop(0, '#60A5FA');
+                grad.addColorStop(0.5, '#3B82F6');
+                grad.addColorStop(1, 'rgba(30, 58, 138, 0)');
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, nucleusRadius + 10, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Core Nucleus Body
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, nucleusRadius, 0, Math.PI * 2);
+                ctx.fillStyle = '#1D4ED8';
+                ctx.strokeStyle = '#93C5FD';
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();
+
+                // Nucleus text (Symbol & Protons)
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 12px "Exo 2"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`${currentElement.sym}`, centerX, centerY - 4);
+                ctx.font = '9px "JetBrains Mono"';
+                ctx.fillStyle = '#93C5FD';
+                ctx.fillText(`p⁺:${currentElement.num}`, centerX, centerY + 8);
+
+                // 2. Draw Concentric Shells and Orbiting Electrons
+                const numShells = shells.length;
+                const radiusStep = (maxRadius - nucleusRadius - 15) / Math.max(numShells, 1);
+
+                shells.forEach((electronCount, sIdx) => {
+                    const radius = nucleusRadius + radiusStep * (sIdx + 1);
+
+                    // Orbit ring
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(59, 130, 246, 0.25)';
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([4, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Speed decreases for outer orbits
+                    const speed = (0.02 / (sIdx + 1)) * speedFactor;
+                    const baseAngle = angleOffset * (sIdx % 2 === 0 ? 1 : -1) * speed;
+
+                    // Draw Electrons on this orbit
+                    for (let e = 0; e < electronCount; e++) {
+                        const electronAngle = baseAngle + (e * (2 * Math.PI / electronCount));
+                        const ex = centerX + radius * Math.cos(electronAngle);
+                        const ey = centerY + radius * Math.sin(electronAngle);
+
+                        // Electron Glow
+                        ctx.beginPath();
+                        ctx.arc(ex, ey, 6, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(52, 211, 153, 0.4)';
+                        ctx.fill();
+
+                        // Electron Body
+                        ctx.beginPath();
+                        ctx.arc(ex, ey, 3.5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#34D399';
+                        ctx.strokeStyle = '#A7F3D0';
+                        ctx.lineWidth = 1;
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                });
+
+                if (!isPaused) {
+                    angleOffset += 1;
+                }
+                animId = requestAnimationFrame(draw);
+            }
+
+            draw();
+        }
+
+        window.onload = function() {
+            initUI();
+        };
+    </script>
+</body>
+</html>
